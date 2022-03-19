@@ -1,1 +1,1 @@
-## Link to the PDF so that we read it on WeChat like a breeze.
+Link to the PDF so that we read it on WeChat like a breeze.
