@@ -32,3 +32,12 @@
     transform: rotate(360deg);
   }
 }
+
+.Container {
+  background-color: #282c34;
+  box-sizing: border-box;
+  /* width: 560px; */
+  height: 100vh;
+  padding: 40px;
+  /* border: 30px solid #282c34; */
+}

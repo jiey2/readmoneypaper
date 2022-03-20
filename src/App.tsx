@@ -1,18 +1,22 @@
-import React from "react";
+import { ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button, Space } from "@arco-design/web-react";
 import "@arco-design/web-react/dist/css/arco.css";
+import { AwesomeButton } from "./Components";
 import logo from "./emojis/index";
 import "./App.css";
 
-function App() {
+function App(): ReactElement {
+  const navigate = useNavigate();
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>Upload a Doc, get a link.</p>
+        <p>Go find or share a Doc!</p>
         <Space>
-          <Button type="primary">See Existing</Button>
-          <Button >Upload</Button>
+          <Button type="primary" onClick={() => navigate('/list')}>See Existing</Button>
+          <AwesomeButton></AwesomeButton>
         </Space>
       </header>
     </div>
