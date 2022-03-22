@@ -102,6 +102,15 @@ export default function () {
     {
       title: "Description",
       dataIndex: "DocDescription",
+      width: 480,
+    },
+    {
+      title: "Create Time",
+      dataIndex: "CreateTime",
+      width: 240,
+      render: (timestamp) => {
+        return (new Date(timestamp)).toString();
+      }
     },
     {
       title: "Action",
