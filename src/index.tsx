@@ -8,6 +8,7 @@ import reportWebVitals from "./reportWebVitals";
 import { UploadDocument, DocumentsList } from "./Pages";
 
 document.body.setAttribute("arco-theme", "dark");
+
 ReactDOM.render(
   // <React.StrictMode>
   //     <App />
