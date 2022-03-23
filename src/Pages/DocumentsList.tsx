@@ -1,17 +1,31 @@
 /* eslint-disable */
 // @ts-nocheck
 /* @ts-ignore */
-import { Table, Breadcrumb, Link, Button } from "@arco-design/web-react";
-import { IconCopy } from "@arco-design/web-react/icon";
-import { getDocumentsList } from "../services";
+import {
+  Table,
+  Breadcrumb,
+  Button,
+  Typography,
+  Input,
+  Grid,
+  Message,
+} from "@arco-design/web-react";
+import { IconCopy, IconLink, IconDelete } from "@arco-design/web-react/icon";
+import * as dayjs from "dayjs";
+import { getDocumentsList, deleteRecord } from "../services";
 import useRequest from "../utils/useRequest";
 import ArcoConfetti from "arco-confetti";
 import "../App.css";
 
 const BreadcrumbItem = Breadcrumb.Item;
 const ButtonGroup = Button.Group;
+const Row = Grid.Row;
+const Col = Grid.Col;
 
 export default function () {
+  // states
+  // const [deleteRecordLoading, setDeleteRecordLoading] = useState(false);
+
   // services
   const { loading: getDocumentsLoading, result: documentList } =
     useRequest(getDocumentsList);
@@ -61,30 +75,6 @@ export default function () {
     return true;
   }
 
-  const copy = (text?: string): void => {
-    if (!text) {
-      return;
-    }
-    if (typeof text !== "string") {
-      throw new TypeError(`param should be string, but receive ${typeof text}`);
-    }
-
-    function handler(e: ClipboardEvent): void {
-      if (e.clipboardData) {
-        try {
-          e.clipboardData.setData("text/plain", text as string);
-          e.preventDefault();
-          window.document.removeEventListener("copy", handler, true);
-        } catch (err) {
-          throw new Error("Copy Error");
-        }
-      }
-    }
-
-    window.document.addEventListener("copy", handler, true);
-    setTimeout(() => window.document.execCommand("copy"), 500);
-  };
-
   const handleDocumentString = (item: Record<string, any>): string => {
     console.log(item);
     return `【${item?.DocName}】【${item?.DocGroup}】【${item?.DocDescription}】${item?.BucketUrl}`;
@@ -92,36 +82,49 @@ export default function () {
 
   const columns = [
     {
-      title: "Name",
+      title: "名称",
       dataIndex: "DocName",
+      width: "15%",
+      sorter: (a, b) => a.DocName - b.DocName,
     },
     {
-      title: "Group",
+      title: "分组",
       dataIndex: "DocGroup",
+      width: "15%",
     },
     {
-      title: "Description",
+      title: "描述",
       dataIndex: "DocDescription",
-      width: 480,
+      sorter: (a, b) => a.DocDescription.length - b.DocDescription.length,
+      // width: "40%",
     },
     {
-      title: "Create Time",
+      title: "创建时间",
       dataIndex: "CreateTime",
-      width: 240,
+      width: "20%",
+      sorter: (a, b) => a.CreateTime - b.CreateTime,
       render: (timestamp) => {
-        return (new Date(timestamp)).toString();
-      }
+        return dayjs.unix(timestamp).format("YYYY-MM-DD HH:mm");
+      },
     },
     {
-      title: "Action",
+      title: "",
       dataIndex: "BucketUrl",
-      width: 160,
+      width: "10%",
       render: (col: any, item: any) => {
         return (
           <ButtonGroup>
-            <Link href={`https://${col}`} target="_blank" icon>
-              {"Link"}
-            </Link>
+            {/* <Space direction='vertical'> */}
+            <Button
+              type="text"
+              size="mini"
+              icon={<IconLink />}
+              onClick={() => {
+                window.open(`https://${col}`, "_blank");
+              }}
+            >
+              Link
+            </Button>
             <ArcoConfetti>
               <Button
                 type="text"
@@ -134,6 +137,19 @@ export default function () {
                 Copy
               </Button>
             </ArcoConfetti>
+            <Button
+              type="text"
+              size="mini"
+              status="danger"
+              icon={<IconDelete />}
+              onClick={async () => {
+                Message.info("处理中");
+                await deleteRecord(item?.DID);
+              }}
+            >
+              Delete
+            </Button>
+            {/* </Space> */}
           </ButtonGroup>
         );
       },
@@ -141,19 +157,37 @@ export default function () {
   ];
   return (
     <div className="Container">
-      <Breadcrumb>
-        <BreadcrumbItem>
-          <a href="#">Home</a>
-        </BreadcrumbItem>
-        <BreadcrumbItem>List</BreadcrumbItem>
-      </Breadcrumb>
-      <Table
-        loading={getDocumentsLoading}
-        style={{ marginTop: 10 }}
-        columns={columns}
-        data={documentList?.data}
-        pagination={{ showTotal: true, sizeCanChange: true }}
-      />
+      <div style={{ maxWidth: 1000, margin: "auto" }}>
+        <Breadcrumb>
+          <BreadcrumbItem>
+            <a href="#">Home</a>
+          </BreadcrumbItem>
+          <BreadcrumbItem>List</BreadcrumbItem>
+        </Breadcrumb>
+        <Row>
+          <Col span={12} style={{ margin: "auto" }}>
+            <Typography>
+              <Typography.Title heading={3} style={{ marginTop: 0 }}>
+                Documents List
+              </Typography.Title>
+            </Typography>
+          </Col>
+          <Col span={12} style={{ margin: "auto" }}>
+            <Input.Search
+              allowClear
+              placeholder="Enter keyword to search"
+              style={{ width: "80%", float: "right", textAlign: "center" }}
+            />
+          </Col>
+        </Row>
+        <Table
+          loading={getDocumentsLoading}
+          style={{ marginTop: 0 }}
+          columns={columns}
+          data={documentList?.data}
+          pagination={{ showTotal: true, sizeCanChange: true }}
+        />
+      </div>
     </div>
   );
 }

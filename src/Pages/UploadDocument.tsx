@@ -1,7 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
 /* @ts-ignore */
-import { ReactElement, useState } from "react";
+import { ReactElement, useState, createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Form,
@@ -10,11 +10,13 @@ import {
   Space,
   Breadcrumb,
   Typography,
+  Modal,
   Message,
 } from "@arco-design/web-react";
+import { v4 as uuidv4 } from "uuid";
+import { handleMetadataCopy } from "../utils/handleMetadataCopy";
 import UploadSubmitButton from "./UploadSubmitButton";
 import "../App.css";
-import { v4 as uuidv4 } from "uuid";
 
 const FormItem = Form.Item;
 const BreadcrumbItem = Breadcrumb.Item;
@@ -36,17 +38,20 @@ const noLabelLayout = {
   },
 };
 
-// interface Props {
-//   visible: boolean;
-// }
-
 function UpLoadDocument(): ReactElement {
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
   // states
   const [fileName, setFileName] = useState();
-  const [fileStatusOK, setFileStatusOK] = useState(false);
+
+  const [modal, contextHolder] = Modal.useModal();
+  const ConfigContext = createContext({});
+
+  const config = {
+    title: 'Profile',
+    content: <ConfigContext.Consumer>{(fileName) => `Current user: ${fileName.file}`}</ConfigContext.Consumer>,
+  };
 
   // methods
 
@@ -58,7 +63,6 @@ function UpLoadDocument(): ReactElement {
       /^([^.]*)\.(.*)$/,
       `d1t6xzqj7kfktr.cloudfront.net/${fid}.$2`
     );
-    console.log("?",generatedFileName)
     let raw = JSON.stringify({
       did: fid,
       name: values?.name,
@@ -75,13 +79,18 @@ function UpLoadDocument(): ReactElement {
     };
 
     fetch(
-      "https://vcsrnm6hf9.execute-api.ap-southeast-1.amazonaws.com/edge/database",
+      "https://vcsrnm6hf9.execute-api.ap-southeast-1.amazonaws.com/edge/database?operation=INSERT",
       requestOptions
-    ).then(() => {
-      Message.success("Uploaded!");
-      setTimeout(() => {}, 1500);
-      window.location.reload();
-    });
+    )
+      .then(() => {
+        // Message.success("Uploaded!");
+        setTimeout(() => {}, 1500);
+        console.log("raw", raw);
+        Modal.success({
+          title: "上传成功",
+          onOk: () => window.location.reload()
+        });
+      })
   };
 
   const onSubmit = () => {
@@ -146,20 +155,13 @@ function UpLoadDocument(): ReactElement {
             label="Contents"
             rules={[{ required: true, message: "Pls upload." }]}
           >
-            {/* <Upload
-              drag
-              accept=".doc,.docx,.pdf,.png,.jpg"
-              action="http://d1t6xzqj7kfktr.cloudfront.net/test.pdf"
-              autoUpload={false}
-              limit={1}
-              tip="Only pdf, png, jpg, doc, docx can be uploaded, and the size does not exceed 100MB"
-            /> */}
             <UploadSubmitButton
               fid={fid}
               setFileName={setFileName}
-              setFileStatusOK={setFileStatusOK}
             />
           </FormItem>
+          <ConfigContext.Provider value='PJY'>
+          {contextHolder}
           <FormItem {...noLabelLayout} shouldUpdate>
             {() => {
               return (
@@ -176,6 +178,7 @@ function UpLoadDocument(): ReactElement {
               );
             }}
           </FormItem>
+          </ConfigContext.Provider>
         </Form>
       </div>
     </div>
